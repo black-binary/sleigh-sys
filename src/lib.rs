@@ -194,7 +194,24 @@ pub trait AssemblyEmit {
     fn dump(&mut self, addr: &ffi::Address, mnem: &str, body: &str);
 }
 
-pub trait PcodeEmit {
+pub struct RustAssemblyEmit<'a> {
+    internal: &'a mut dyn AssemblyEmit,
+}
+
+impl<'a> RustAssemblyEmit<'a> {
+    pub fn from_internal(internal: &'a mut dyn AssemblyEmit) -> Self {
+        Self { internal }
+    }
+
+    pub fn dump(&mut self, address: &ffi::Address, mnem: &CxxString, body: &CxxString) {
+        let mnem = mnem.to_str().unwrap();
+        let body = body.to_str().unwrap();
+
+        self.internal.dump(address, mnem, body);
+    }
+}
+
+pub trait PCodeEmit {
     /// Callback that will be called when disassembling, emitting the pcode
     /// - address: the address of the machine instruction
     /// - opcode: the opcode of the particular pcode instruction
@@ -210,7 +227,7 @@ pub trait PcodeEmit {
 }
 
 pub struct RustPCodeEmit<'a> {
-    pub internal: &'a mut dyn PcodeEmit,
+    pub internal: &'a mut dyn PCodeEmit,
 }
 
 pub trait LoadImage {
@@ -227,22 +244,22 @@ impl<'a> RustLoadImage<'a> {
         Self { internal }
     }
 
-    pub unsafe fn load_fill(&mut self, ptr: *mut u8, size: u32, addr: &ffi::Address) {
+    unsafe fn load_fill(&mut self, ptr: *mut u8, size: u32, addr: &ffi::Address) {
         let slice = std::slice::from_raw_parts_mut(ptr, size as usize);
         self.internal.load_fill(slice, addr);
     }
 
-    pub fn adjust_vma(&mut self, adjust: isize) {
+    fn adjust_vma(&mut self, adjust: isize) {
         self.internal.adjust_vma(adjust)
     }
 }
 
 impl<'a> RustPCodeEmit<'a> {
-    pub fn from_internal(internal: &'a mut dyn PcodeEmit) -> Self {
+    pub fn from_internal(internal: &'a mut dyn PCodeEmit) -> Self {
         Self { internal }
     }
 
-    pub unsafe fn dump(
+    unsafe fn dump(
         &mut self,
         address: &ffi::Address,
         opcode: u32,
@@ -264,8 +281,9 @@ impl<'a> RustPCodeEmit<'a> {
 #[cxx::bridge]
 pub mod ffi {
     extern "Rust" {
-        //type RustAssemblyEmit<'a>;
-        //fn dump(self: &mut RustAssemblyEmit, address: &Address, mnem: &CxxString, body: &CxxString);
+        type RustAssemblyEmit<'a>;
+        fn dump(self: &mut RustAssemblyEmit, address: &Address, mnem: &CxxString, body: &CxxString);
+
         type RustPCodeEmit<'a>;
         unsafe fn dump(
             self: &mut RustPCodeEmit,
@@ -362,6 +380,7 @@ pub mod ffi {
 
         type Decompiler;
         unsafe fn translate(self: &Decompiler, emit: *mut RustPCodeEmit, addr: u64) -> i32;
+        unsafe fn disassemble(self: &Decompiler, emit: *mut RustAssemblyEmit, addr: u64) -> i32;
         unsafe fn getContext(self: Pin<&mut Decompiler>) -> *mut ContextDatabase;
         unsafe fn newDecompiler(
             loadImage: *mut RustLoadImage,

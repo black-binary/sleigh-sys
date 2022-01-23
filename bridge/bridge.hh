@@ -19,12 +19,26 @@ using std::unique_ptr;
 class RustPCodeEmit;
 
 class RustPCodeEmitProxy : public PcodeEmit {
-public:
+private:
   RustPCodeEmit *inner;
+
+public:
   RustPCodeEmitProxy(RustPCodeEmit *emit) : inner(emit) {}
 
   virtual void dump(const Address &addr, OpCode opc, VarnodeData *outvar,
                     VarnodeData *vars, int4 isize);
+};
+
+class RustAssemblyEmit;
+class RustAssemblyEmitProxy : public AssemblyEmit {
+private:
+  RustAssemblyEmit *inner;
+
+public:
+  RustAssemblyEmitProxy(RustAssemblyEmit *inner) : inner(inner) {}
+
+  virtual void dump(const Address &addr, const string &mnem,
+                    const string &body);
 };
 
 class RustLoadImage;
@@ -56,6 +70,7 @@ public:
   }
 
   int32_t translate(RustPCodeEmit *emit, uint64_t addr) const;
+  int32_t disassemble(RustAssemblyEmit *emit, uint64_t addr) const;
   ContextDatabase *getContext() { return &this->context; }
 };
 

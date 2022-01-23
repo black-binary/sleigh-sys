@@ -49,7 +49,30 @@ void RustPCodeEmitProxy::dump(const Address &addr, OpCode opc,
 int32_t Decompiler::translate(RustPCodeEmit *emit, uint64_t addr) const {
   auto address = Address(this->getDefaultCodeSpace(), addr);
   auto p = RustPCodeEmitProxy(emit);
-  return this->oneInstruction(p, address);
+  int32_t n = 0;
+  try {
+    n = this->oneInstruction(p, address);
+  } catch (...) {
+    // TODO
+  }
+  return n;
+}
+
+int32_t Decompiler::disassemble(RustAssemblyEmit *emit, uint64_t addr) const {
+  auto address = Address(this->getDefaultCodeSpace(), addr);
+  auto p = RustAssemblyEmitProxy(emit);
+  int32_t n = 0;
+  try {
+    n = this->printAssembly(p, address);
+  } catch (...) {
+    // TODO
+  }
+  return n;
 }
 
 uint32_t getVarnodeSize(const VarnodeData &data) { return data.size; }
+
+void RustAssemblyEmitProxy::dump(const Address &addr, const string &mnem,
+                                 const string &body) {
+  this->inner->dump(addr, mnem, body);
+}
