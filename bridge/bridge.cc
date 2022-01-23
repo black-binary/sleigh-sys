@@ -1,6 +1,7 @@
 #include "bridge.hh"
 //#include "../target/cxxbridge/sleigh-sys/src/lib.rs.h"
 #include "sleigh-sys/src/lib.rs.h"
+#include <mutex>
 
 unique_ptr<Decompiler> newDecompiler(RustLoadImage *loadImage,
                                      unique_ptr<DocumentStorage> spec) {
@@ -23,6 +24,9 @@ unique_ptr<ContextDatabase> newContext() {
 }
 
 unique_ptr<DocumentStorage> newDocumentStorage(const std::string &s) {
+  static std::mutex lock;
+  std::lock_guard<std::mutex> guard(lock);
+
   auto doc = make_unique<DocumentStorage>();
   std::stringstream ss;
   ss << s;
