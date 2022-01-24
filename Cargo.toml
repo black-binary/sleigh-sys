@@ -5,7 +5,8 @@ edition = "2021"
 authors = ["black-binary <blackbinary@qq.com>"]
 license = "Apache-2.0"
 description = "Rust bindings for Ghidra's Sleigh decompiler"
-
+keywords = ["disassemble", "binary-analysis"]
+repository = "https://github.com/black-binary/sleigh-sys/"
 
 [dependencies]
 cxx = "1.0"
