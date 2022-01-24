@@ -1,4 +1,4 @@
 # sleigh-sys
 
-Rust bindings for Ghidra's sleigh decompiler
+Rust bindings for Ghidra's Sleigh decompiler
 

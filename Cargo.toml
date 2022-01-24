@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["black-binary <blackbinary@qq.com>"]
 license = "Apache-2.0"
+description = "Rust bindings for Ghidra's Sleigh decompiler"
 
 
 [dependencies]
