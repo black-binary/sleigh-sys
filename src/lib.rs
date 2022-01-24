@@ -1,9 +1,7 @@
-use cxx::type_id;
 use cxx::CxxString;
 use cxx::CxxVector;
 use cxx::UniquePtr;
 use std::os::raw::c_char;
-use std::pin::Pin;
 
 use num_derive::FromPrimitive;
 
